@@ -15,6 +15,7 @@ module GELF
     def initialize(host = 'localhost', port = 12201, max_size = 'WAN', default_options = {})
       @enabled = true
       @collect_file_and_line = true
+      @ignore = ["protocol", "tls" ]
 
       self.level = GELF::DEBUG
       self.max_chunk_size = max_size
@@ -25,8 +26,18 @@ module GELF
       self.default_options['host'] ||= Socket.gethostname
       self.default_options['level'] ||= GELF::UNKNOWN
       self.default_options['facility'] ||= 'gelf-rb'
+      self.default_options['protocol'] ||= GELF::Protocol::UDP
+      self.default_options['tls'] ||= GELF::TLS::FALSE
 
-      @sender = RubyUdpSender.new([[host, port]])
+      if self.default_options['protocol'] == GELF::Protocol::TCP
+        if self.default_options['tls'] == GELF::TLS::FALSE
+          @sender = RubyTcpSender.new([[host, port]])
+        else
+          @sender = RubyTcpSSLSender.new([[host, port, self.default_options['tls']]])
+        end
+      else
+        @sender = RubyUdpSender.new([[host, port]])
+      end
       self.level_mapping = :logger
     end
 
@@ -145,7 +156,12 @@ module GELF
       extract_hash(*args)
       @hash['level'] = message_level unless message_level.nil?
       if @hash['level'] >= level
-        @sender.send_datagrams(datagrams_from_hash)
+        if self.default_options['protocol'] == GELF::Protocol::TCP
+          validate_hash
+          @sender.send(@hash.to_json + "\0")
+        else
+          @sender.send_datagrams(datagrams_from_hash)
+        end
       end
     end
 
@@ -166,6 +182,9 @@ module GELF
       set_timestamp
       check_presence_of_mandatory_attributes
       @hash
+      @ignore.each do |value|
+        @hash.delete(value)
+      end
     end
 
     def self.extract_hash_from_exception(exception)
