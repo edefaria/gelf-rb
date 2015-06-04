@@ -205,12 +205,12 @@ module GELF
             tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
             if @tls == GELF::TLS::TRUE
               begin
-                jruby-openssl = Gem.latest_spec_for('jruby-openssl').version
+                @jrubyopenssl = Gem.latest_spec_for('jruby-openssl').version
               rescue
-                jruby-openssl = nil
+                @jrubyopenssl = nil
               end
-              if openssl
-                if jruby-openssl >= Gem::Version.new('0.9.7')
+              if @jrubyopenssl
+                if @jrubyopenssl >= Gem::Version.new('0.9.7')
                   tls_context.set_params({ :ssl_version => 'TLSv1_2'})
                 else
                   tls_context.set_params({ :ssl_version => 'TLSv1'})
@@ -254,12 +254,12 @@ module GELF
         tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
         if @tls == GELF::TLS::TRUE
           begin
-            jruby-openssl = Gem.latest_spec_for('jruby-openssl').version
+            @jrubyopenssl = Gem.latest_spec_for('jruby-openssl').version
           rescue
-            jruby-openssl = nil
+            @jrubyopenssl = nil
           end
-          if openssl
-            if jruby-openssl >= Gem::Version.new('0.9.7')
+          if @jrubyopenssl
+            if @jrubyopenssl >= Gem::Version.new('0.9.7')
               tls_context.set_params({ :ssl_version => 'TLSv1_2'})
             else
               tls_context.set_params({ :ssl_version => 'TLSv1'})
