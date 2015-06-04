@@ -255,10 +255,8 @@ module GELF
       rescue Errno::EINPROGRESS, Errno::EWOULDBLOCK
         return false
       rescue Errno::EHOSTUNREACH, Errno::ENETUNREACH, Errno::ECONNABORTED, Errno::ECONNREFUSED, Errno::ETIMEDOUT
-         socket.close
         return false
       rescue OpenSSL::SSL::SSLError
-        socket.close
         return false
       rescue SystemCallError
         return false
