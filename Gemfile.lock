@@ -57,7 +57,6 @@ PLATFORMS
 
 DEPENDENCIES
   jeweler (~> 1.8.7)
-  jruby-openssl (>= 0.9.7)
   mocha (~> 0.14.0)
   shoulda (~> 2.11.3)
   test-unit (~> 3.0.8)

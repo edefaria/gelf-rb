@@ -204,10 +204,19 @@ module GELF
             tls_context = OpenSSL::SSL::SSLContext.new
             tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
             if @tls == GELF::TLS::TRUE
-              if Gem.latest_spec_for('jruby-openssl').version >=  Gem::Version.new('0.9.7')
-                tls_context.set_params({ :ssl_version => 'TLSv1_2'})
+              begin
+                jruby-openssl = Gem.latest_spec_for('jruby-openssl').version
+              rescue
+                jruby-openssl = nil
+              end
+              if openssl
+                if jruby-openssl >= Gem::Version.new('0.9.7')
+                  tls_context.set_params({ :ssl_version => 'TLSv1_2'})
+                else
+                  tls_context.set_params({ :ssl_version => 'TLSv1'})
+                end
               else
-                tls_context.set_params({ :ssl_version => 'TLSv1'})
+                tls_context.set_params({ :ssl_version => 'TLSv1_2'})
               end
             end
             @socket = OpenSSL::SSL::SSLSocket.new(@tcp,tls_context)
@@ -244,11 +253,20 @@ module GELF
         tls_context = OpenSSL::SSL::SSLContext.new
         tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
         if @tls == GELF::TLS::TRUE
-           if Gem.latest_spec_for('jruby-openssl').version >=  Gem::Version.new('0.9.7')
-             tls_context.set_params({ :ssl_version => 'TLSv1_2'})
-           else
-             tls_context.set_params({ :ssl_version => 'TLSv1'})
-           end
+          begin
+            jruby-openssl = Gem.latest_spec_for('jruby-openssl').version
+          rescue
+            jruby-openssl = nil
+          end
+          if openssl
+            if jruby-openssl >= Gem::Version.new('0.9.7')
+              tls_context.set_params({ :ssl_version => 'TLSv1_2'})
+            else
+              tls_context.set_params({ :ssl_version => 'TLSv1'})
+            end
+          else
+            tls_context.set_params({ :ssl_version => 'TLSv1_2'})
+          end
         end
         tcp = TCPSocket.new(@host, @port)
         socket = OpenSSL::SSL::SSLSocket.new(tcp,tls_context)
