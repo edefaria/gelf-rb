@@ -11,8 +11,7 @@ module GELF
   end
   module TLS
     FALSE = 0
-    LEGACY = 1
-    TRUE = 2
+    TRUE = 1
   end
 end
 

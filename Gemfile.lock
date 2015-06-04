@@ -25,6 +25,7 @@ GEM
       nokogiri (= 1.5.10)
       rake
       rdoc
+    jruby-openssl (>= 0.9.7)
     json (1.8.2)
     jwt (0.1.8)
       multi_json (>= 1.5)
@@ -56,6 +57,7 @@ PLATFORMS
 
 DEPENDENCIES
   jeweler (~> 1.8.7)
+  jruby-openssl (>= 0.9.7)
   mocha (~> 0.14.0)
   shoulda (~> 2.11.3)
   test-unit (~> 3.0.8)
