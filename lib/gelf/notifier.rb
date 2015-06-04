@@ -157,7 +157,7 @@ module GELF
       @hash['level'] = message_level unless message_level.nil?
       if @hash['level'] >= level
         if self.default_options['protocol'] == GELF::Protocol::TCP
-          validate_hash
+          serialize_hash
           @sender.send(@hash.to_json + "\0")
         else
           @sender.send_datagrams(datagrams_from_hash)
