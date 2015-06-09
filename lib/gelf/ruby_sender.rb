@@ -182,10 +182,9 @@ module GELF
     require "openssl"
     require "timeout"
 
-    def initialize(host, port, tls)
+    def initialize(host, port)
       @host = host
       @port = port
-      @tls = tls
       connect
     end
 
@@ -203,21 +202,19 @@ module GELF
           if @socket.nil?
             tls_context = OpenSSL::SSL::SSLContext.new
             tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
-            if @tls == GELF::TLS::TRUE
-              begin
-                @jrubyopenssl = Gem.latest_spec_for('jruby-openssl').version
-              rescue
-                @jrubyopenssl = nil
-              end
-              if @jrubyopenssl
-                if @jrubyopenssl >= Gem::Version.new('0.9.7')
-                  tls_context.set_params({ :ssl_version => 'TLSv1_2'})
-                else
-                  tls_context.set_params({ :ssl_version => 'TLSv1'})
-                end
-              else
+            begin
+              @jrubyopenssl = Gem.latest_spec_for('jruby-openssl').version
+            rescue
+              @jrubyopenssl = nil
+            end
+            if @jrubyopenssl
+              if @jrubyopenssl >= Gem::Version.new('0.9.7')
                 tls_context.set_params({ :ssl_version => 'TLSv1_2'})
+              else
+                tls_context.set_params({ :ssl_version => 'TLSv1'})
               end
+            else
+              tls_context.set_params({ :ssl_version => 'TLSv1_2'})
             end
             @socket = OpenSSL::SSL::SSLSocket.new(@tcp,tls_context)
             @socket.sync_close = true
@@ -252,21 +249,19 @@ module GELF
         )
         tls_context = OpenSSL::SSL::SSLContext.new
         tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
-        if @tls == GELF::TLS::TRUE
-          begin
-            @jrubyopenssl = Gem.latest_spec_for('jruby-openssl').version
-          rescue
-            @jrubyopenssl = nil
-          end
-          if @jrubyopenssl
-            if @jrubyopenssl >= Gem::Version.new('0.9.7')
-              tls_context.set_params({ :ssl_version => 'TLSv1_2'})
-            else
-              tls_context.set_params({ :ssl_version => 'TLSv1'})
-            end
-          else
+        begin
+          @jrubyopenssl = Gem.latest_spec_for('jruby-openssl').version
+        rescue
+          @jrubyopenssl = nil
+        end
+        if @jrubyopenssl
+          if @jrubyopenssl >= Gem::Version.new('0.9.7')
             tls_context.set_params({ :ssl_version => 'TLSv1_2'})
+          else
+            tls_context.set_params({ :ssl_version => 'TLSv1'})
           end
+        else
+          tls_context.set_params({ :ssl_version => 'TLSv1_2'})
         end
         tcp = TCPSocket.new(@host, @port)
         socket = OpenSSL::SSL::SSLSocket.new(tcp,tls_context)
@@ -309,7 +304,7 @@ module GELF
     def initialize(addresses)
       @sockets = []
       addresses.each do |address|
-        s = RubyTcpSSLSocket.new(address[0], address[1], address[2])
+        s = RubyTcpSSLSocket.new(address[0], address[1])
         @sockets.push(s)
       end
     end
@@ -318,13 +313,13 @@ module GELF
       addresses.each do |address|
         found = false
         @sockets.each do |socket|
-          if socket.matches?(address[0], address[1], address[2])
+          if socket.matches?(address[0], address[1])
             found = true
             break
           end
         end
         if not found
-          s = RubyTcpSSLSocket.new(address[0], address[1], address[2])
+          s = RubyTcpSSLSocket.new(address[0], address[1])
           @sockets.push(s)
         end
       end

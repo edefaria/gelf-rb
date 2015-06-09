@@ -33,7 +33,7 @@ module GELF
         if self.default_options['tls'] == GELF::TLS::FALSE
           @sender = RubyTcpSender.new([[host, port]])
         else
-          @sender = RubyTcpSSLSender.new([[host, port, self.default_options['tls']]])
+          @sender = RubyTcpSSLSender.new([[host, port]])
         end
       else
         @sender = RubyUdpSender.new([[host, port]])
