@@ -15,7 +15,7 @@ module GELF
     def initialize(host = 'localhost', port = 12201, max_size = 'WAN', default_options = {})
       @enabled = true
       @collect_file_and_line = true
-      @ignore = ["protocol", "tls" ]
+      @ignore = [ "protocol", "tls" ]
 
       self.level = GELF::DEBUG
       self.max_chunk_size = max_size

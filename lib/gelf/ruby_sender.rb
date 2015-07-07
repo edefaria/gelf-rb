@@ -1,4 +1,15 @@
 module GELF
+
+  # Module definition for TCP & TLS
+  module Protocol
+    UDP = 0
+    TCP = 1
+  end
+  module TLS
+    FALSE = 0
+    TRUE = 1
+  end
+
   # Plain Ruby UDP sender.
   class RubyUdpSender
     attr_accessor :addresses
@@ -22,6 +33,7 @@ module GELF
     end
   end
 
+  # TCP socket management
   class RubyTcpSocket
     attr_accessor :socket
 
@@ -80,6 +92,7 @@ module GELF
     end
   end
 
+  # Plain Ruby TCP sender.
   class RubyTcpSender
     attr_reader :addresses
 
@@ -175,6 +188,7 @@ module GELF
     end
   end
 
+  # TCP +SSL socket management
   class RubyTcpSSLSocket
     attr_accessor :socket
 
@@ -298,6 +312,7 @@ module GELF
     end
   end
 
+  # Plain Ruby TCP + TLS sender.
   class RubyTcpSSLSender
     attr_reader :addresses
 
