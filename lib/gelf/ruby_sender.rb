@@ -196,6 +196,9 @@ module GELF
     require "openssl"
     require "timeout"
 
+    @tls_version = "TLSv1_2"
+    @check_ssl = false
+
     def initialize(host, port)
       @host = host
       @port = port
@@ -215,20 +218,15 @@ module GELF
           end
           if @socket.nil?
             tls_context = OpenSSL::SSL::SSLContext.new
-            tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
-            begin
-              @jrubyopenssl = Gem.latest_spec_for('jruby-openssl').version
-            rescue
-              @jrubyopenssl = nil
-            end
-            if @jrubyopenssl
-              if @jrubyopenssl >= Gem::Version.new('0.9.7')
-                tls_context.set_params({ :ssl_version => 'TLSv1_2'})
-              else
-                tls_context.set_params({ :ssl_version => 'TLSv1'})
-              end
+            if RubyTcpSSLSocket.check_ssl == true
+              tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
             else
-              tls_context.set_params({ :ssl_version => 'TLSv1_2'})
+              tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_NONE})
+            end
+            if !RubyTcpSSLSocket.tls_version.nil?
+              if OpenSSL::SSL::SSLContext::METHODS.any? { |v| v.to_s.include?(RubyTcpSSLSocket.tls_version) }
+                tls_context.set_params({ :ssl_version => RubyTcpSSLSocket.tls_version})
+              end
             end
             @socket = OpenSSL::SSL::SSLSocket.new(@tcp,tls_context)
             @socket.sync_close = true
@@ -262,20 +260,15 @@ module GELF
           Socket::Constants::IPPROTO_IP
         )
         tls_context = OpenSSL::SSL::SSLContext.new
-        tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
-        begin
-          @jrubyopenssl = Gem.latest_spec_for('jruby-openssl').version
-        rescue
-          @jrubyopenssl = nil
-        end
-        if @jrubyopenssl
-          if @jrubyopenssl >= Gem::Version.new('0.9.7')
-            tls_context.set_params({ :ssl_version => 'TLSv1_2'})
-          else
-            tls_context.set_params({ :ssl_version => 'TLSv1'})
-          end
+        if RubyTcpSSLSocket.check_ssl == true
+          tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
         else
-          tls_context.set_params({ :ssl_version => 'TLSv1_2'})
+          tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_NONE})
+        end
+        if !RubyTcpSSLSocket.tls_version.nil?
+          if OpenSSL::SSL::SSLContext::METHODS.any? { |v| v.to_s.include?(RubyTcpSSLSocket.tls_version) }
+            tls_context.set_params({ :ssl_version => RubyTcpSSLSocket.tls_version})
+          end
         end
         tcp = TCPSocket.new(@host, @port)
         socket = OpenSSL::SSL::SSLSocket.new(tcp,tls_context)
