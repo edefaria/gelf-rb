@@ -196,12 +196,14 @@ module GELF
     require "openssl"
     require "timeout"
 
-    @tls_version = "TLSv1_2"
-    @check_ssl = false
+    tls_version = "TLSv1_2"
+    check_ssl = false
 
     def initialize(host, port)
       @host = host
       @port = port
+      @tls_version = tls_version
+      @check_ssl = check_ssl
       connect
     end
 
@@ -218,14 +220,14 @@ module GELF
           end
           if @socket.nil?
             tls_context = OpenSSL::SSL::SSLContext.new
-            if RubyTcpSSLSocket.check_ssl == true
+            if @check_ssl == true
               tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
             else
               tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_NONE})
             end
-            if !RubyTcpSSLSocket.tls_version.nil?
-              if OpenSSL::SSL::SSLContext::METHODS.any? { |v| v.to_s.include?(RubyTcpSSLSocket.tls_version) }
-                tls_context.set_params({ :ssl_version => RubyTcpSSLSocket.tls_version})
+            if !@tls_version.nil?
+              if OpenSSL::SSL::SSLContext::METHODS.any? { |v| v.to_s.include?(@tls_version) }
+                tls_context.set_params({ :ssl_version => @tls_version})
               end
             end
             @socket = OpenSSL::SSL::SSLSocket.new(@tcp,tls_context)
@@ -260,14 +262,14 @@ module GELF
           Socket::Constants::IPPROTO_IP
         )
         tls_context = OpenSSL::SSL::SSLContext.new
-        if RubyTcpSSLSocket.check_ssl == true
+        if @check_ssl == true
           tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
         else
           tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_NONE})
         end
-        if !RubyTcpSSLSocket.tls_version.nil?
-          if OpenSSL::SSL::SSLContext::METHODS.any? { |v| v.to_s.include?(RubyTcpSSLSocket.tls_version) }
-            tls_context.set_params({ :ssl_version => RubyTcpSSLSocket.tls_version})
+        if !@tls_version.nil?
+          if OpenSSL::SSL::SSLContext::METHODS.any? { |v| v.to_s.include?(@tls_version) }
+            tls_context.set_params({ :ssl_version => @tls_version})
           end
         end
         tcp = TCPSocket.new(@host, @port)
