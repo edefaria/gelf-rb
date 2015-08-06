@@ -29,8 +29,6 @@ module GELF
       self.default_options['level'] ||= GELF::UNKNOWN
       self.default_options['facility'] ||= 'gelf-rb'
       self.default_options['protocol'] ||= GELF::Protocol::UDP
-      self.default_options['tls'] ||= GELF::TLS::FALSE
-      self.default_options['check_ssl'] ||= false
 
       if self.default_options['protocol'] == GELF::Protocol::TCP
         @sender = RubyTcpSender.new([[host, port]])

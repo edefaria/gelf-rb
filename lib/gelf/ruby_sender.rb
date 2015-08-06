@@ -5,10 +5,6 @@ module GELF
     UDP = 0
     TCP = 1
   end
-  module TLS
-    FALSE = 0
-    TRUE = 1
-  end
 
   # Plain Ruby UDP sender.
   class RubyUdpSender
@@ -50,7 +46,7 @@ module GELF
 
     def connected?
       if not @connected
-        if @options['tls'] == GELF::TLS::FALSE
+	if @options['tls'].nil? or !@options['tls'] == true
           begin
             if @socket.nil?
               @socket = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
@@ -77,10 +73,12 @@ module GELF
             end
             if @socket.nil?
               tls_context = OpenSSL::SSL::SSLContext.new
-              if @options['check_ssl'] == true
-                tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
-              else
-                tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_NONE})
+              if !@options['check_ssl'].nil?
+                if @options['check_ssl'] == true
+                  tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
+                else
+                  tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_NONE})
+                end
               end
               if !@options['tls_version'].nil?
                 if OpenSSL::SSL::SSLContext::METHODS.any? { |v| v.to_s.include?(@options['tls_version']) }
@@ -113,7 +111,7 @@ module GELF
 
     def connect
       @connected = false
-      if @options['tls'] == GELF::TLS::FALSE
+      if @options['tls'].nil? or !@options['tls'] == true
         socket = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
         sockaddr = Socket.sockaddr_in(@port, @host)
         begin
@@ -131,10 +129,12 @@ module GELF
             Socket::Constants::IPPROTO_IP
           )
           tls_context = OpenSSL::SSL::SSLContext.new
-          if @options['check_ssl'] == true
-            tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
-          else
-            tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_NONE})
+          if !@options['check_ssl'].nil?
+            if @options['check_ssl'] == true
+              tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
+            else
+              tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_NONE})
+            end
           end
           if !@options['tls_version'].nil?
             if OpenSSL::SSL::SSLContext::METHODS.any? { |v| v.to_s.include?(@options['tls_version']) }
@@ -173,7 +173,7 @@ module GELF
     def close
       @socket.close
       @socket = nil
-      if @options['tls'] == GELF::TLS::TRUE
+      if !@options['tls'].nil? && @options['tls'] == true
         @tcp = nil
       end
     end
