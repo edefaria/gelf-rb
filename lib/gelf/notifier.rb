@@ -7,30 +7,33 @@ module GELF
     end
 
     attr_accessor :enabled, :collect_file_and_line, :rescue_network_errors
-    attr_reader :max_chunk_size, :level, :default_options, :level_mapping
+    attr_reader :max_chunk_size, :level, :default_options, :config_options, :level_mapping
 
     # +host+ and +port+ are host/ip and port of graylog2-server.
     # +max_size+ is passed to max_chunk_size=.
     # +default_options+ is used in notify!
-    def initialize(host = 'localhost', port = 12201, max_size = 'WAN', default_options = {})
+    def initialize(host = 'localhost', port = 12201, max_size = 'WAN', default_options = {}, config_options = {})
       @enabled = true
       @collect_file_and_line = true
-      @ignore = [ "protocol", "tls", "check_ssl", "tls_version" ]
 
-      @@options = default_options
+      @@options = config_options
 
       self.level = GELF::DEBUG
       self.max_chunk_size = max_size
       self.rescue_network_errors = false
 
-      self.default_options = default_options
+      self.default_options = Hash.new
+      self.default_options = default_options unless default_options.nil?
       self.default_options['version'] = SPEC_VERSION
       self.default_options['host'] ||= Socket.gethostname
       self.default_options['level'] ||= GELF::UNKNOWN
       self.default_options['facility'] ||= 'gelf-rb'
-      self.default_options['protocol'] ||= GELF::Protocol::UDP
 
-      if self.default_options['protocol'] == GELF::Protocol::TCP
+      self.config_options = Hash.new
+      self.config_options = config_options unless config_options.nil?
+      self.config_options['protocol'] ||= GELF::Protocol::UDP
+
+      if self.config_options['protocol'] == GELF::Protocol::TCP
         @sender = RubyTcpSender.new([[host, port]])
       else
         @sender = RubyUdpSender.new([[host, port]])
@@ -87,6 +90,10 @@ module GELF
 
     def default_options=(options)
       @default_options = self.class.stringify_keys(options)
+    end
+
+    def config_options=(options)
+      @config_options = self.class.stringify_keys(options)
     end
 
     # +mapping+ may be a hash, 'logger' (GELF::LOGGER_MAPPING) or 'direct' (GELF::DIRECT_MAPPING).
@@ -157,7 +164,7 @@ module GELF
       extract_hash(*args)
       @hash['level'] = message_level unless message_level.nil?
       if @hash['level'] >= level
-        if self.default_options['protocol'] == GELF::Protocol::TCP
+        if self.config_options['protocol'] == GELF::Protocol::TCP
           serialize_hash
           @sender.send(@hash.to_json + "\0")
         else
@@ -182,11 +189,6 @@ module GELF
       set_timestamp
       check_presence_of_mandatory_attributes
       @hash
-      @ignore.each do |value|
-        if !default_options[value].nil?
-          @hash.delete(value)
-        end
-      end
     end
 
     def self.extract_hash_from_exception(exception)

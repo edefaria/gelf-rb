@@ -73,14 +73,14 @@ module GELF
             end
             if @socket.nil?
               tls_context = OpenSSL::SSL::SSLContext.new
-              if !@options['check_ssl'].nil?
+              unless @options['check_ssl'].nil?
                 if @options['check_ssl'] == true
                   tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
                 else
                   tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_NONE})
                 end
               end
-              if !@options['tls_version'].nil?
+              unless @options['tls_version'].nil?
                 if OpenSSL::SSL::SSLContext::METHODS.any? { |v| v.to_s.include?(@options['tls_version']) }
                   tls_context.set_params({ :ssl_version => @options['tls_version']})
                 end
@@ -129,14 +129,14 @@ module GELF
             Socket::Constants::IPPROTO_IP
           )
           tls_context = OpenSSL::SSL::SSLContext.new
-          if !@options['check_ssl'].nil?
+          unless @options['check_ssl'].nil?
             if @options['check_ssl'] == true
               tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_PEER})
             else
               tls_context.set_params({ :verify_mode=>OpenSSL::SSL::VERIFY_NONE})
             end
           end
-          if !@options['tls_version'].nil?
+          unless @options['tls_version'].nil?
             if OpenSSL::SSL::SSLContext::METHODS.any? { |v| v.to_s.include?(@options['tls_version']) }
               tls_context.set_params({ :ssl_version => @options['tls_version']})
             end
