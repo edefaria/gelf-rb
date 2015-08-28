@@ -52,6 +52,10 @@ initialization, you define a protocol key.
   logger = GELF::Logger.new("localhost", 12201, "WAN", { :facility => "appname",
     protocol: GELF::Protocol::TCP})
 
+An other example of how to use TLS encryption with a good level of security.
+  logger = GELF::Logger.new("localhost", 12201, "WAN", { :facility => "appname",
+    protocol: GELF::Protocol::TCP, tls: true, check_ssl: true, tls_version: "TLSv1_2")
+
 == Note on Patches/Pull Requests
 
 * Fork the project.
