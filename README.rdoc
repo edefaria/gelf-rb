@@ -40,7 +40,7 @@ Since it's compatible with the Logger interface, you can also use it in your Rai
   config.logger = GELF::Logger.new("localhost", 12201, "WAN", { :facility => "appname" })
 
 
-=== Sending GELF logs using TCP instead of UDP (default)
+=== Sending GELF logs using TCP instead of UDP (default) with TLS support
 
 This fork adds TCP support to GELF using _@zsprackett_'s pull
 request:https://github.com/Graylog2/gelf-rb/pull/21 on the
@@ -52,7 +52,9 @@ initialization, you define a protocol key.
   logger = GELF::Logger.new("localhost", 12201, "WAN", { :facility => "appname",
     protocol: GELF::Protocol::TCP})
 
-An other example of how to use TLS encryption with a good level of security.
+This fork add TLS support for TCP https://github.com/edefaria/gelf-rb based of the previous fork.
+
+An example of how to use TLS encryption with a good level of security.
   logger = GELF::Logger.new("localhost", 12201, "WAN", { :facility => "appname",
     protocol: GELF::Protocol::TCP, tls: true, check_ssl: true, tls_version: "TLSv1_2")
 
