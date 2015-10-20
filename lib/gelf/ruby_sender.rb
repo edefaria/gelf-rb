@@ -235,7 +235,13 @@ module GELF
         end
       end
     end
-
+    
+    def close
+      @sockets.each do |socket|
+      	socket.close
+      end
+    end
+    
     private
     def write_any(writers, message)
       writers.shuffle.each do |w|
