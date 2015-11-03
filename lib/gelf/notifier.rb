@@ -219,11 +219,6 @@ module GELF
     end
 
     def set_timestamp
-      begin
-        @hash['timestamp'] = @hash['timestamp'].to_f if @hash['timestamp'].is_a?(String)
-      rescue
-        @hash['timestamp'] = nil
-      end
       @hash['timestamp'] = Time.now.utc.to_f if @hash['timestamp'].nil?
     end
 
