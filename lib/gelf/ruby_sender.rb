@@ -189,6 +189,7 @@ module GELF
         s = RubyTcpSocket.new(address[0], address[1])
         @sockets.push(s)
       end
+      @options = Notifier.options
     end
 
     def addresses=(addresses)
@@ -207,16 +208,17 @@ module GELF
     end
 
     def send(message)
-      while true do
+      if @options['tcp_retry'].nil?
+        max_retry = 0
+      else
+        max_retry = @options['tcp_retry']
+      end
+      i = 0
+      while i < max_retry || max_retry == 0 do
         sent = false
         timeout = 1
-        sockets = @sockets.map { |s|
-          if s.connected?
-            s.socket
-          end
-        }
-        sockets.compact!
-        next unless not sockets.empty?
+        sockets = @sockets.map { |s| s.socket if s.connected? }
+        next if sockets.compact.empty?
         begin
           result = select(sockets, sockets, nil, timeout)
           if result
@@ -225,7 +227,7 @@ module GELF
             readers = result[0]
             read = readable(readers)
           end
-          break if sent && read
+          return if sent && read
         rescue SystemCallError, IOError, EOFError, OpenSSL::SSL::SSLError
           @sockets.each do |s|
             s.socket.close
@@ -233,15 +235,19 @@ module GELF
             s.connect
           end
         end
+        if max_retry != 0 
+          i += 1
+        end
       end
+      warn 'Maximum TCP connection retry reached'
     end
-    
+
     def close
       @sockets.each do |socket|
-      	socket.close
+        socket.close
       end
     end
-    
+
     private
     def write_any(writers, message)
       writers.shuffle.each do |w|
