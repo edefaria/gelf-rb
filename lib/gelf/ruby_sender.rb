@@ -208,12 +208,12 @@ module GELF
     end
 
     def send(message)
-      if @options['tcp_retry'] and @options['tcp_retry'].match(/^(\d)+$/)
+      if @options['tcp_retry'] and @options['tcp_retry'].is_i?
         max_retry = @options['tcp_retry'].to_i
       else
         max_retry = 0
       end
-      if @options['tcp_retry_ms'] and @options['tcp_retry_ms'].match(/^(\d)+$/)
+      if @options['tcp_retry_ms'] and @options['tcp_retry_ms'].is_i?
         sleep_retry = @options['tcp_retry_ms'].to_f
       else
         sleep_retry = 50
