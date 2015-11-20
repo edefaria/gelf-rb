@@ -171,7 +171,7 @@ module GELF
     end
 
     def close
-      @socket.close
+      @socket.close unless @socket.nil?
       @socket = nil
       if !@options['tls'].nil? && @options['tls'] == true
         @tcp = nil
@@ -239,21 +239,11 @@ module GELF
             read = readable(readers)
           end
           return if sent && read
-        rescue SystemCallError, IOError, EOFError, OpenSSL::SSL::SSLError
-          @sockets.each do |s|
-            s.socket.close
-            s.socket = nil
-            s.connect
-          end
+        rescue SystemCallError, IOError, EOFError, OpenSSL::SSL::SSLError, TypeError
+          reconnect
         end
       end
       warn 'Maximum TCP connection retry reached'
-    end
-
-    def close
-      @sockets.each do |socket|
-        socket.close
-      end
     end
 
     private
@@ -265,7 +255,7 @@ module GELF
         rescue Errno::EPIPE
           @sockets.each do |s|
             if s.socket == w
-              s.socket.close
+              s.socket.close unless s.socket.nil?
               s.socket = nil
               s.connect
             end
@@ -282,7 +272,7 @@ module GELF
         rescue EOFError
           @sockets.each do |s|
             if s.socket == r
-              s.socket.close
+              s.socket.close unless s.socket.nil?
               s.socket = nil
               s.connect
             end
@@ -291,6 +281,15 @@ module GELF
         end
       end
       return true
+    end
+
+    def reconnect
+      @sockets.each do |s|
+        s.socket.close unless s.socket.nil?
+        s.socket = nil
+        @conencted=false
+        s.connect
+      end
     end
   end
 
