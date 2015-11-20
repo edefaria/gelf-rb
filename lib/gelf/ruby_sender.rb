@@ -208,16 +208,27 @@ module GELF
     end
 
     def send(message)
-      if @options['tcp_retry'].nil?
-        max_retry = 0
+      if @options['tcp_retry'] and @options['tcp_retry'].match(/^(\d)+$/)
+        max_retry = @options['tcp_retry'].to_i
       else
-        max_retry = @options['tcp_retry']
+        max_retry = 5
+      end
+      if @options['tcp_retry_ms'] and @options['tcp_retry_ms'].match(/^(\d)+$/)
+        sleep_retry = @options['tcp_retry_ms'].to_f
+      else
+        sleep_retry = 50
       end
       i = 0
       while i < max_retry || max_retry == 0 do
         sent = false
         timeout = 1
         sockets = @sockets.map { |s| s.socket if s.connected? }
+        if max_retry != 0
+          if i != 0
+            sleep(sleep_retry/1000)
+          end
+          i += 1
+        end
         next if sockets.compact.empty?
         begin
           result = select(sockets, sockets, nil, timeout)
@@ -234,9 +245,6 @@ module GELF
             s.socket = nil
             s.connect
           end
-        end
-        if max_retry != 0 
-          i += 1
         end
       end
       warn 'Maximum TCP connection retry reached'
