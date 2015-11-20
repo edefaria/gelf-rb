@@ -222,7 +222,13 @@ module GELF
       while i < max_retry || max_retry == 0 do
         sent = false
         timeout = 1
-        sockets = @sockets.map { |s| s.socket if s.connected? }
+        sockets = @sockets.map { |s|
+          if s.connected?
+            s.socket
+          else
+            reconnect
+          end
+        }
         if max_retry != 0
           if i != 0
             sleep(sleep_retry/1000)
