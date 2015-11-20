@@ -46,7 +46,7 @@ module GELF
 
     def connected?
       if not @connected
-	if @options['tls'].nil? or !@options['tls'] == true
+        if defined? @options['tls'] and @options['tls'] != true
           begin
             if @socket.nil?
               @socket = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
@@ -111,11 +111,11 @@ module GELF
 
     def connect
       @connected = false
-      if @options['tls'].nil? or !@options['tls'] == true
+      if defined? @options['tls'] and @options['tls'] != true
         socket = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
         sockaddr = Socket.sockaddr_in(@port, @host)
         begin
-          socket.connect_nonblock(sockaddr)
+          socket.connect(sockaddr)
         rescue Errno::EISCONN
           @connected = true
         rescue SystemCallError
@@ -232,16 +232,16 @@ module GELF
         next if sockets.compact.empty?
         begin
           result = select(sockets, sockets, nil, timeout)
-          if result
-            writers = result[1]
-            sent = write_any(writers, message)
-            readers = result[0]
-            read = readable(readers)
-          end
-          return if sent && read
         rescue SystemCallError, IOError, EOFError, OpenSSL::SSL::SSLError, TypeError
           reconnect
         end
+        if result
+          writers = result[1]
+          sent = write_any(writers, message)
+          readers = result[0]
+          read = readable(readers)
+        end
+        return if sent && read
       end
       warn 'Maximum TCP connection retry reached'
     end
