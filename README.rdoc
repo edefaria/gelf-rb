@@ -2,7 +2,8 @@
 
 This is the new GELF gem written by Alexey Palazhchenko. It is based on the old gem by Lennart Koopmann and allows you to send GELF messages to Graylog2 server instances. See http://www.graylog2.org/about/gelf for more information about GELF and http://rdoc.info/github/Graylog2/gelf-rb/master/frames for API documentation.
 
-Works with Ruby 1.8.7, 1.9.x. and 2.0.x.
+Works with Ruby 1.8.7, 1.9.x.,2.0.x and 2.1.x
+Works with Jruby 1.7.x + jruby-openssl >= 0.9.7
 
 {<img src="https://travis-ci.org/Graylog2/gelf-rb.png?branch=master" alt="Build Status" />}[https://travis-ci.org/Graylog2/gelf-rb]
 
@@ -55,8 +56,16 @@ initialization, you define a protocol key.
 This fork add TLS support for TCP https://github.com/edefaria/gelf-rb based of the previous fork.
 
 An example of how to use TLS encryption with a good level of security.
-  logger = GELF::Logger.new("localhost", 12201, "WAN", { :facility => "appname" },
-    { :protocol: GELF::Protocol::TCP, :tls: true, :check_ssl: true, :tls_version: "TLSv1_2" })
+  logger = GELF::Logger.new("localhost", 12201, "WAN", { :facility => "appname" }, nil,
+    { :protocol: GELF::Protocol::TCP, :tls: true, :tcp_retry => "0", :check_ssl: true, :tls_version: "TLSv1_2" })
+
+Current config_config for tcp:
+:protocol => The GELF protocol (TCP or UDP).
+:tls => TLS option (true/false) to add TLS encryption for TCP protocol
+:tls_version => Force a TLS version (like "TLSv1_2") when TCP/TLS protocol is used
+:check_ssl => Check SSL trusted certificate (true/flase) when TCP/TLS protocol is used
+:tcp_retry => Number of TCP retry to send a message
+:tcp_retry_ms => Number of ms to wait between each TCP retry
 
 == Note on Patches/Pull Requests
 
