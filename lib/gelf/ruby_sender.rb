@@ -238,7 +238,7 @@ module GELF
         next if sockets.compact.empty?
         begin
           result = select(sockets, sockets, nil, timeout)
-        rescue SystemCallError, IOError, EOFError, OpenSSL::SSL::SSLError, TypeError
+        rescue SystemCallError, IOError, EOFError, OpenSSL::SSL::SSLError, TypeError, Errno::EPIPE
           reconnect
         end
         if result
@@ -263,9 +263,11 @@ module GELF
             if s.socket == w
               s.socket.close unless s.socket.nil?
               s.socket = nil
+              @conencted=false
               s.connect
             end
           end
+          return false
         end
       end
       return false
@@ -275,11 +277,12 @@ module GELF
       readers.shuffle.each do |r|
         begin
           r.sysread(10)
-        rescue EOFError
+        rescue EOFError, IOError
           @sockets.each do |s|
             if s.socket == r
               s.socket.close unless s.socket.nil?
               s.socket = nil
+              @conencted=false
               s.connect
             end
           end
