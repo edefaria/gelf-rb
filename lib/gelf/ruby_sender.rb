@@ -1,6 +1,6 @@
 module GELF
 
-  # Module definition for TCP & TLS
+  # Module definition for TCP
   module Protocol
     UDP = 0
     TCP = 1
