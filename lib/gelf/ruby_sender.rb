@@ -252,6 +252,14 @@ module GELF
       warn 'Maximum TCP connection retry reached'
     end
 
+    def close
+      @socket.close
+      @socket = nil
+      if !@options['tls'].nil? && @options['tls'] == true
+        @tcp = nil
+      end
+    end
+
     private
     def write_any(writers, message)
       writers.shuffle.each do |w|
