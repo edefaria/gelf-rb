@@ -253,7 +253,7 @@ module GELF
     end
 
     def close
-      @socket.close
+      @socket.close unless s.socket.nil?
       @socket = nil
       if !@options['tls'].nil? && @options['tls'] == true
         @tcp = nil
